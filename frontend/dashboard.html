@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PICARO - Photographer Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <h2>📸 PICARO</h2>
+  <div class="profile">
+    <span>Photographer</span>
+    <button onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <h1>Dashboard</h1>
+
+  <!-- Stats Section -->
+  <div class="stats">
+    <div class="card">
+      <h3 id="totalEvents">0</h3>
+      <p>Total Events</p>
+    </div>
+    <div class="card">
+      <h3 id="totalPhotos">0</h3>
+      <p>Total Photos</p>
+    </div>
+    <div class="card">
+      <h3>0</h3>
+      <p>Total Views</p>
+    </div>
+  </div>
+
+  <!-- Upload Section -->
+  <div class="upload-section">
+    <h2>Create / Upload Event</h2>
+
+    <input type="text" id="eventId" placeholder="Create Event ID">
+
+    <!-- Drag & Drop -->
+    <div id="dropArea" class="drop-area">
+      <p>Drag & Drop Photos Here or Click to Select</p>
+      <input type="file" id="photos" multiple hidden>
+    </div>
+
+    <button id="uploadBtn" onclick="uploadPhotos()">Upload Photos</button>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div id="progressBar" class="progress-bar"></div>
+    </div>
+
+    <p id="status"></p>
+  </div>
+
+  <!-- Events List -->
+  <div class="events-section">
+    <h2>Your Events</h2>
+    <div id="eventsContainer" class="events-grid"></div>
+  </div>
+
+</div>
+
+<script src="dashboard.js"></script>
+</body>
+</html>

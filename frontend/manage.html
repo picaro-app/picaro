@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Manage Event</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+  <h1 id="eventTitle"></h1>
+
+  <!-- ===============================
+       UPLOAD NEW PHOTOS SECTION
+  =============================== -->
+
+  <div class="upload-section">
+
+    <h2>Upload More Photos</h2>
+
+    <input type="file" id="photoInput" multiple accept="image/*">
+
+    <button onclick="uploadPhotos()">Upload</button>
+
+    <!-- Progress bar -->
+    <div class="progress-container">
+      <div id="progressBar" class="progress-bar"></div>
+    </div>
+
+    <p id="uploadStatus"></p>
+
+  </div>
+
+
+  <!-- ===============================
+       GALLERY SECTION
+  =============================== -->
+
+  <div id="gallery" class="gallery-grid"></div>
+
+</div>
+
+
+<!-- ===============================
+     FULLSCREEN MODAL
+=============================== -->
+
+<div id="fullscreenModal" class="fullscreen-modal">
+
+  <div class="fullscreen-topbar">
+
+    <a id="downloadBtn" class="fullscreen-icon">⬇</a>
+
+    <span class="fullscreen-icon" onclick="closeFullscreen()">✕</span>
+
+  </div>
+
+  <img id="fullscreenImage">
+
+</div>
+
+
+<script>
+
+const urlParams = new URLSearchParams(window.location.search);
+const eventId = urlParams.get("event");
+
+document.getElementById("eventTitle").innerText = "Manage Event: " + eventId;
+
+
+// ===============================
+// LOAD EVENT PHOTOS
+// ===============================
+async function loadEventPhotos() {
+
+  const response = await fetch(`http://localhost:5000/events/${eventId}/images`);
+  const data = await response.json();
+
+  const gallery = document.getElementById("gallery");
+
+  gallery.innerHTML = "";
+
+  if (data.success && data.images.length > 0) {
+
+    data.images.forEach(img => {
+
+      const div = document.createElement("div");
+      div.className = "photo-card";
+
+      const imageElement = document.createElement("img");
+
+      imageElement.src = img;
+
+      imageElement.onclick = () => openFullscreen(img);
+
+      div.appendChild(imageElement);
+
+      gallery.appendChild(div);
+
+    });
+
+  } else {
+
+    gallery.innerHTML = "<p>No photos found</p>";
+
+  }
+
+}
+
+
+// ===============================
+// UPLOAD NEW PHOTOS WITH PROGRESS
+// ===============================
+function uploadPhotos() {
+
+  const files = document.getElementById("photoInput").files;
+
+  const progressBar = document.getElementById("progressBar");
+  const status = document.getElementById("uploadStatus");
+
+  if (files.length === 0) {
+
+    alert("Please select photos");
+    return;
+
+  }
+
+  const formData = new FormData();
+
+  for (let i = 0; i < files.length; i++) {
+
+    formData.append("photos", files[i]);
+
+  }
+
+  const xhr = new XMLHttpRequest();
+
+  xhr.open("POST", `http://localhost:5000/upload/${eventId}`, true);
+
+
+  // PROGRESS TRACKING
+  xhr.upload.onprogress = function (e) {
+
+    if (e.lengthComputable) {
+
+      const percent = Math.round((e.loaded / e.total) * 100);
+
+      progressBar.style.width = percent + "%";
+
+      status.innerText = "Uploading... " + percent + "%";
+
+    }
+
+  };
+
+
+  xhr.onload = function () {
+
+    if (xhr.status === 200) {
+
+      status.innerText = "Upload Complete ✅";
+
+      progressBar.style.width = "0%";
+
+      document.getElementById("photoInput").value = "";
+
+      loadEventPhotos();
+
+    }
+
+  };
+
+
+  xhr.send(formData);
+
+}
+
+
+// ===============================
+// FULLSCREEN VIEW
+// ===============================
+function openFullscreen(imgSrc) {
+
+  const modal = document.getElementById("fullscreenModal");
+
+  modal.style.display = "flex";
+
+  document.getElementById("fullscreenImage").src = imgSrc;
+
+  document.getElementById("downloadBtn").href = imgSrc;
+
+  document.getElementById("downloadBtn").download = "";
+
+}
+
+
+// ===============================
+// CLOSE FULLSCREEN
+// ===============================
+function closeFullscreen() {
+
+  document.getElementById("fullscreenModal").style.display = "none";
+
+}
+
+
+// INITIAL LOAD
+loadEventPhotos();
+
+</script>
+
+</body>
+</html>

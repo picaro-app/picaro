@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PICARO - Find Your Photos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="client-container">
+
+        <h1>PICARO 📸</h1>
+        <p class="subtitle">Find Your Photos Instantly</p>
+
+        <div class="search-box">
+            <input type="text" id="eventId" placeholder="Enter Event ID">
+        </div>
+
+        <div class="selfie-section">
+            <label>Upload Your Selfie</label>
+
+            <input type="file" id="selfieInput" accept="image/*">
+
+            <img id="selfiePreview" class="selfie-preview" style="display:none;" />
+        </div>
+
+        <button type="button" id="findBtn">Find My Photos</button>
+
+        <p id="loadingText"></p>
+
+        <div id="gallery" class="gallery-grid"></div>
+
+    </div>
+
+    <script src="./script.js"></script>
+
+</body>
+</html>

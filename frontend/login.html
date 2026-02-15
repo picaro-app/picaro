@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PICARO - Photographer Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="login-container">
+    <h1>PICARO 📸</h1>
+    <h3>Photographer Login</h3>
+
+    <input type="email" id="email" placeholder="Enter Email">
+    <input type="password" id="password" placeholder="Enter Password">
+
+    <button onclick="login()">Login</button>
+
+    <p id="error" style="color:red;"></p>
+  </div>
+
+  <script>
+    function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      if(email === "admin@picaro.com" && password === "1234") {
+        localStorage.setItem("photographer", "loggedIn");
+        window.location.href = "dashboard.html";
+      } else {
+        document.getElementById("error").innerText = "Invalid Credentials!";
+      }
+    }
+  </script>
+
+</body>
+</html>

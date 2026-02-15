@@ -1,0 +1,11 @@
+{
+  "watch": ["server.js"],
+  "ignore": [
+    "uploads/*",
+    "uploads/events/*",
+    "uploads/events/**/*",
+    "*.jpg",
+    "*.jpeg",
+    "*.png"
+  ]
+}
