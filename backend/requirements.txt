@@ -1,6 +1,5 @@
-fastapi
-uvicorn
-face_recognition
 flask
 flask-cors
 gunicorn
+deepface
+opencv-python-headless
