@@ -526,3 +526,41 @@ body {
 .photo-card:hover img {
   transform: scale(1.08);
 }
+/* Mobile Responsive Fix */
+@media (max-width: 600px) {
+
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 350px;
+    padding: 25px;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  input[type="file"] {
+    font-size: 14px;
+  }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+  }
+
+}
