@@ -1,0 +1,157 @@
+/* PICARO Premium Client UI */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(circle at top, #0a0f2a, #020617 70%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+/* Main container */
+.client-container {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 40px 30px;
+    width: 90%;
+    max-width: 420px;
+    text-align: center;
+    box-shadow: 
+        0 0 40px rgba(0,0,0,0.6),
+        inset 0 0 20px rgba(255,255,255,0.03);
+}
+
+/* Logo */
+.client-container h1 {
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+
+/* Subtitle */
+.subtitle {
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 30px;
+    font-size: 15px;
+}
+
+/* Input */
+.search-box input {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    margin-bottom: 20px;
+
+    background: rgba(255,255,255,0.08);
+    color: white;
+
+    border: 1px solid rgba(255,255,255,0.1);
+
+    transition: 0.3s;
+}
+
+.search-box input:focus {
+    border: 1px solid #4f7cff;
+    box-shadow: 0 0 15px rgba(79,124,255,0.4);
+}
+
+/* File upload */
+.selfie-section {
+    margin-bottom: 20px;
+}
+
+.selfie-section label {
+    display: block;
+    margin-bottom: 10px;
+    color: rgba(255,255,255,0.7);
+}
+
+input[type="file"] {
+    color: rgba(255,255,255,0.8);
+}
+
+/* Preview image */
+.selfie-preview {
+    margin-top: 15px;
+    max-width: 120px;
+    border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.2);
+}
+
+/* Button */
+#findBtn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 14px;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+
+    background: linear-gradient(135deg, #ff3b30, #ff6a5f);
+
+    color: white;
+
+    box-shadow: 
+        0 10px 25px rgba(255,59,48,0.3);
+
+    transition: 0.3s;
+}
+
+#findBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 15px 35px rgba(255,59,48,0.5);
+}
+
+/* Loading text */
+#loadingText {
+    margin-top: 15px;
+    color: rgba(255,255,255,0.6);
+}
+
+/* Gallery */
+.gallery-grid {
+    margin-top: 25px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.gallery-grid img {
+    width: 100%;
+    border-radius: 12px;
+    transition: 0.3s;
+}
+
+.gallery-grid img:hover {
+    transform: scale(1.05);
+}
+
+/* Mobile optimization */
+@media (max-width: 480px) {
+
+    .client-container {
+        padding: 30px 20px;
+        border-radius: 18px;
+    }
+
+    .client-container h1 {
+        font-size: 26px;
+    }
+
+}
