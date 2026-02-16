@@ -564,3 +564,48 @@ body {
   }
 
 }
+body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #0f172a, #020617);
+    font-family: Arial, sans-serif;
+    
+    /* CENTER FIX */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* FULL HEIGHT */
+    min-height: 100vh;
+}
+
+.client-container {
+    width: 90%;
+    max-width: 400px;
+    
+    text-align: center;
+    
+    /* MOBILE SPACING FIX */
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 14px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    background: #ef4444;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
