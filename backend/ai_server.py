@@ -6,7 +6,9 @@ import shutil
 
 app = FastAPI()
 
-# Allow frontend access
+# =========================
+# CORS (ALLOW ALL)
+# =========================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,12 +17,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-UPLOAD_FOLDER = "backend/uploads/events"
+# =========================
+# SAFE PATH FOR RAILWAY
+# =========================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads", "events")
+
+# Ensure folder exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
-# ===============================
-# FACE MATCH FUNCTION (FINAL)
-# ===============================
+# =========================
+# ROOT TEST ENDPOINT
+# =========================
+@app.get("/")
+def root():
+    return {"status": "PICARO AI RUNNING"}
+
+
+# =========================
+# FACE MATCH FUNCTION
+# =========================
 def match_faces(selfie_path, event_folder):
 
     print("\n======== DEBUG START ========")
@@ -28,48 +46,43 @@ def match_faces(selfie_path, event_folder):
     print("EVENT FOLDER:", event_folder)
 
     if not os.path.exists(event_folder):
-        print("FOLDER NOT FOUND")
+        print("EVENT FOLDER NOT FOUND")
         return []
 
     files = os.listdir(event_folder)
-    print("FILES FOUND:", files)
+    print("FILES:", files)
 
-    # Load selfie
     selfie_image = face_recognition.load_image_file(selfie_path)
     selfie_encodings = face_recognition.face_encodings(selfie_image)
 
     if len(selfie_encodings) == 0:
-        print("NO FACE FOUND IN SELFIE")
+        print("NO FACE IN SELFIE")
         return []
 
     selfie_encoding = selfie_encodings[0]
 
     matched_images = []
-    seen = set()   # prevents duplicates
+    seen = set()
 
-
-    # Check every file
     for file in files:
 
         file_path = os.path.join(event_folder, file)
 
-        # Skip folders
         if os.path.isdir(file_path):
             continue
 
-        print("\nCHECKING:", file_path)
-
         try:
+
+            print("CHECKING:", file)
+
             image = face_recognition.load_image_file(file_path)
             encodings = face_recognition.face_encodings(image)
 
             if len(encodings) == 0:
-                print("NO FACE FOUND")
                 continue
 
             best_distance = 1.0
 
-            # Check ALL faces in image
             for encoding in encodings:
 
                 distance = face_recognition.face_distance(
@@ -77,51 +90,36 @@ def match_faces(selfie_path, event_folder):
                     encoding
                 )[0]
 
-                print("FACE DISTANCE:", distance)
-
                 if distance < best_distance:
                     best_distance = distance
 
+            print("DISTANCE:", best_distance)
 
-            print("BEST DISTANCE:", best_distance)
+            if best_distance < 0.50 and file not in seen:
 
+                matched_images.append(file)
+                seen.add(file)
 
-            # STRICT MATCH CONDITION
-            if best_distance < 0.50:
-
-                if file not in seen:
-
-                    print("MATCH CONFIRMED:", file)
-
-                    matched_images.append(file)
-
-                    seen.add(file)
-
-            else:
-
-                print("NOT MATCH")
-
+                print("MATCH:", file)
 
         except Exception as e:
             print("ERROR:", e)
 
-
-    print("\nMATCHED FILES:", matched_images)
+    print("MATCHED:", matched_images)
     print("======== DEBUG END ========\n")
 
     return matched_images
 
 
-
-# ===============================
-# API ENDPOINT
-# ===============================
+# =========================
+# MATCH API
+# =========================
 @app.post("/match/{event_id}")
 async def match(event_id: str, selfie: UploadFile = File(...)):
 
-    print("\nAPI CALLED FOR EVENT:", event_id)
+    print("API CALLED EVENT:", event_id)
 
-    temp_path = f"temp_{selfie.filename}"
+    temp_path = os.path.join(BASE_DIR, f"temp_{selfie.filename}")
 
     with open(temp_path, "wb") as buffer:
         shutil.copyfileobj(selfie.file, buffer)
@@ -130,16 +128,16 @@ async def match(event_id: str, selfie: UploadFile = File(...)):
 
     matched = match_faces(temp_path, event_folder)
 
-    # Delete temp file
     if os.path.exists(temp_path):
         os.remove(temp_path)
 
+    # Railway URL auto detect
+    BASE_URL = os.environ.get("RAILWAY_STATIC_URL", "")
+
     image_urls = [
-        f"http://localhost:5000/events/{event_id}/{img}"
+        f"{BASE_URL}/events/{event_id}/{img}"
         for img in matched
     ]
-
-    print("RETURNING URLS:", image_urls)
 
     return {
         "success": True,

@@ -1,6 +1,6 @@
 fastapi
 uvicorn
-deepface
+face-recognition
 opencv-python-headless
 numpy
 pillow
