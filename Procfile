@@ -1,1 +1,1 @@
-web: uvicorn backend.ai_server:app --host 0.0.0.0 --port $PORT
+web: apt-get update && apt-get install -y libgl1 libglib2.0-0 && python -m uvicorn backend.ai_server:app --host 0.0.0.0 --port $PORT
