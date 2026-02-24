@@ -1,5 +1,5 @@
 fastapi
-uvicorn==0.30.6
+uvicorn[standard]
 deepface==0.0.79
 opencv-python-headless
 numpy

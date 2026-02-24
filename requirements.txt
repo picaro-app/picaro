@@ -1,7 +1,0 @@
-fastapi
-uvicorn[standard]==0.30.6
-deepface==0.0.79
-opencv-python-headless
-numpy
-pillow
-python-multipart

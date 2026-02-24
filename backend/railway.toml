@@ -1,8 +1,11 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "python -m uvicorn ai_server:app --host 0.0.0.0 --port $PORT"
+
 [phases.setup]
-nixPkgs = ["python311", "glib", "libGL"]
+nixPkgs = ["python311", "glib", "libGL", "xorg.libxcb"]
 
 [phases.install]
 cmds = ["pip install -r requirements.txt"]
-
-[start]
-cmd = "python -m uvicorn ai_server:app --host 0.0.0.0 --port $PORT"
