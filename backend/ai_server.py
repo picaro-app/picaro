@@ -1,12 +1,16 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from deepface import DeepFace
 import os
 import shutil
 
 app = FastAPI()
 
+# =========================
 # CORS
+# =========================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,25 +19,51 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# =========================
 # Upload base folder
+# =========================
 UPLOAD_FOLDER = "backend/uploads/events"
-
-# Ensure folder exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# =========================
+# Serve Static Files (CSS, JS)
+# =========================
+app.mount("/static", StaticFiles(directory="backend"), name="static")
 
-# ✅ Root route (Railway health check friendly)
+# =========================
+# UI Routes
+# =========================
+
+# Client UI
 @app.get("/")
-def root():
-    return {"message": "Picaro backend is live 🚀"}
+def serve_client():
+    return FileResponse("backend/index.html")
 
+# Photographer Login
+@app.get("/photographer")
+def serve_photographer():
+    return FileResponse("backend/login.html")
 
-# ✅ Health route
+# Dashboard
+@app.get("/dashboard")
+def serve_dashboard():
+    return FileResponse("backend/dashboard.html")
+
+# Manage Page
+@app.get("/manage")
+def serve_manage():
+    return FileResponse("backend/manage.html")
+
+# =========================
+# Health Check
+# =========================
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
-
+# =========================
+# Face Matching Logic
+# =========================
 def match_faces(selfie_path, event_folder):
 
     if not os.path.exists(event_folder):
@@ -65,6 +95,9 @@ def match_faces(selfie_path, event_folder):
     return matched
 
 
+# =========================
+# Match API
+# =========================
 @app.post("/match/{event_id}")
 async def match(event_id: str, selfie: UploadFile = File(...)):
 
