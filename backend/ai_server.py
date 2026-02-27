@@ -37,22 +37,22 @@ app.mount("/static", StaticFiles(directory="backend"), name="static")
 # Client UI
 @app.get("/")
 def serve_client():
-    return FileResponse("backend/index.html")
+    return FileResponse("index.html")
 
 # Photographer Login
 @app.get("/photographer")
 def serve_photographer():
-    return FileResponse("backend/login.html")
+    return FileResponse("login.html")
 
 # Dashboard
 @app.get("/dashboard")
 def serve_dashboard():
-    return FileResponse("backend/dashboard.html")
+    return FileResponse("dashboard.html")
 
 # Manage Page
 @app.get("/manage")
 def serve_manage():
-    return FileResponse("backend/manage.html")
+    return FileResponse("manage.html")
 
 # =========================
 # Health Check
