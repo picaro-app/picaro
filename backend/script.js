@@ -89,7 +89,7 @@ findBtn.addEventListener("click", async function (e) {
         formData.append("selfie", selfieFile);
 
         const response = await fetch(
-            `http://127.0.0.1:8000/match/${eventId}`,
+            `/match/${eventId}`,
             {
                 method: "POST",
                 body: formData
