@@ -2,8 +2,11 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from deepface import DeepFace
+import cloudinary
+import cloudinary.uploader
 import os
 import shutil
+import uuid
 
 app = FastAPI()
 
@@ -19,7 +22,16 @@ app.add_middleware(
 )
 
 # =========================
-# Upload Folder (PRODUCTION SAFE)
+# CLOUDINARY CONFIG
+# =========================
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET")
+)
+
+# =========================
+# Upload Folder (Temporary Local)
 # =========================
 UPLOAD_FOLDER = "uploads/events"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -71,25 +83,45 @@ def match_faces(selfie_path, event_folder):
 @app.post("/match/{event_id}")
 async def match(event_id: str, selfie: UploadFile = File(...)):
 
-    temp_path = f"temp_{selfie.filename}"
+    try:
+        # Unique temp filename
+        temp_filename = f"{uuid.uuid4()}_{selfie.filename}"
+        temp_path = f"/tmp/{temp_filename}"
 
-    with open(temp_path, "wb") as buffer:
-        shutil.copyfileobj(selfie.file, buffer)
+        # Save selfie locally
+        with open(temp_path, "wb") as buffer:
+            shutil.copyfileobj(selfie.file, buffer)
 
-    event_folder = os.path.join(UPLOAD_FOLDER, event_id)
+        # Upload selfie to Cloudinary
+        upload_result = cloudinary.uploader.upload(
+            temp_path,
+            folder=f"picaro_selfies/{event_id}"
+        )
 
-    matched = match_faces(temp_path, event_folder)
+        selfie_url = upload_result["secure_url"]
 
-    if os.path.exists(temp_path):
-        os.remove(temp_path)
+        # Local folder matching (temporary logic)
+        event_folder = os.path.join(UPLOAD_FOLDER, event_id)
+        matched = match_faces(temp_path, event_folder)
 
-    return {
-        "success": True,
-        "matched": matched
-    }
+        # Remove temp file
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+        return {
+            "success": True,
+            "selfie_url": selfie_url,
+            "matched": matched
+        }
+
+    except Exception as e:
+        print("MATCH ERROR:", e)
+        return {
+            "success": False,
+            "error": "AI Server Error"
+        }
 
 # =========================
-# 👇 STATIC FILES (IMPORTANT)
-# This serves index.html, css, js automatically
+# STATIC FILES
 # =========================
 app.mount("/", StaticFiles(directory=".", html=True), name="static")
