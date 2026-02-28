@@ -92,4 +92,4 @@ async def match(event_id: str, selfie: UploadFile = File(...)):
 # 👇 STATIC FILES (IMPORTANT)
 # This serves index.html, css, js automatically
 # =========================
-app.mount("/", StaticFiles(directory=".", html=True), name="static")
+app.mount("/", StaticFiles(directory="backend", html=True), name="static")
