@@ -1,6 +1,5 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from deepface import DeepFace
 import os
@@ -20,39 +19,10 @@ app.add_middleware(
 )
 
 # =========================
-# Upload base folder
+# Upload Folder (PRODUCTION SAFE)
 # =========================
-UPLOAD_FOLDER = "backend/uploads/events"
+UPLOAD_FOLDER = "uploads/events"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-# =========================
-# Serve Static Files (CSS, JS)
-# =========================
-app.mount("/static", StaticFiles(directory="backend"), name="static")
-
-# =========================
-# UI Routes
-# =========================
-
-# Client UI
-@app.get("/")
-def serve_client():
-    return FileResponse("index.html")
-
-# Photographer Login
-@app.get("/photographer")
-def serve_photographer():
-    return FileResponse("login.html")
-
-# Dashboard
-@app.get("/dashboard")
-def serve_dashboard():
-    return FileResponse("dashboard.html")
-
-# Manage Page
-@app.get("/manage")
-def serve_manage():
-    return FileResponse("manage.html")
 
 # =========================
 # Health Check
@@ -117,3 +87,9 @@ async def match(event_id: str, selfie: UploadFile = File(...)):
         "success": True,
         "matched": matched
     }
+
+# =========================
+# 👇 STATIC FILES (IMPORTANT)
+# This serves index.html, css, js automatically
+# =========================
+app.mount("/", StaticFiles(directory=".", html=True), name="static")
