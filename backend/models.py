@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from database import Base
 
+
 class Photographer(Base):
     __tablename__ = "photographers"
 
@@ -17,9 +18,11 @@ class Photographer(Base):
 class Event(Base):
     __tablename__ = "events"
 
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, nullable=False)
-    event_code = Column(String, unique=True, index=True)
+    # Photographer khud decide karega event_id
+    event_id = Column(String, primary_key=True, index=True)
+
+    event_name = Column(String, nullable=False)
+
     created_at = Column(DateTime, default=datetime.utcnow)
 
     photographer_id = Column(Integer, ForeignKey("photographers.id"))
