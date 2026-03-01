@@ -93,6 +93,27 @@ def signup(name: str, email: str, password: str, db: Session = Depends(get_db)):
         "message": "Photographer account created successfully"
     }
 
+from fastapi import Body
+
+@app.post("/login")
+def login(email: str = Body(...), password: str = Body(...), db: Session = Depends(get_db)):
+
+    user = db.query(models.Photographer).filter(
+        models.Photographer.email == email
+    ).first()
+
+    if not user:
+        raise HTTPException(status_code=400, detail="User not found")
+
+    if user.password != password:
+        raise HTTPException(status_code=400, detail="Incorrect password")
+
+    return {
+        "success": True,
+        "message": "Login successful",
+        "photographer_id": user.id,
+        "name": user.name
+    }
 # =========================
 # FACE MATCHING LOGIC
 # =========================
