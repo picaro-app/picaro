@@ -1,7 +1,8 @@
-from fastapi import FastAPI, File, UploadFile, Depends, HTTPException
+from fastapi import FastAPI, File, UploadFile, Depends, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 from deepface import DeepFace
 import cloudinary
 import cloudinary.uploader
@@ -53,7 +54,7 @@ cloudinary.config(
 )
 
 # =========================
-# Upload Folder (Temporary Local)
+# Upload Folder
 # =========================
 UPLOAD_FOLDER = "uploads/events"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -66,7 +67,7 @@ def health():
     return {"status": "ok"}
 
 # =========================
-# PHOTOGRAPHER SIGNUP
+# SIGNUP
 # =========================
 @app.post("/signup")
 def signup(name: str, email: str, password: str, db: Session = Depends(get_db)):
@@ -93,8 +94,9 @@ def signup(name: str, email: str, password: str, db: Session = Depends(get_db)):
         "message": "Photographer account created successfully"
     }
 
-from fastapi import Body
-
+# =========================
+# LOGIN
+# =========================
 @app.post("/login")
 def login(email: str = Body(...), password: str = Body(...), db: Session = Depends(get_db)):
 
@@ -114,6 +116,68 @@ def login(email: str = Body(...), password: str = Body(...), db: Session = Depen
         "photographer_id": user.id,
         "name": user.name
     }
+
+# =========================
+# CREATE EVENT (Manual event_id)
+# =========================
+class EventCreate(BaseModel):
+    event_id: str
+    event_name: str
+    photographer_id: int
+
+
+@app.post("/create-event")
+def create_event(data: EventCreate, db: Session = Depends(get_db)):
+
+    existing_event = db.query(models.Event).filter(
+        models.Event.event_id == data.event_id
+    ).first()
+
+    if existing_event:
+        raise HTTPException(status_code=400, detail="Event ID already exists")
+
+    new_event = models.Event(
+        event_id=data.event_id,
+        event_name=data.event_name,
+        photographer_id=data.photographer_id
+    )
+
+    db.add(new_event)
+    db.commit()
+    db.refresh(new_event)
+
+    # Auto create folder for event
+    event_path = os.path.join(UPLOAD_FOLDER, data.event_id)
+    os.makedirs(event_path, exist_ok=True)
+
+    return {
+        "success": True,
+        "event_id": new_event.event_id,
+        "event_name": new_event.event_name
+    }
+
+# =========================
+# GET MY EVENTS
+# =========================
+@app.get("/my-events/{photographer_id}")
+def get_my_events(photographer_id: int, db: Session = Depends(get_db)):
+
+    events = db.query(models.Event).filter(
+        models.Event.photographer_id == photographer_id
+    ).all()
+
+    return {
+        "success": True,
+        "events": [
+            {
+                "event_id": e.event_id,
+                "event_name": e.event_name,
+                "created_at": e.created_at
+            }
+            for e in events
+        ]
+    }
+
 # =========================
 # FACE MATCHING LOGIC
 # =========================
