@@ -1,6 +1,7 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy.orm import Session
 from deepface import DeepFace
 import cloudinary
 import cloudinary.uploader
@@ -8,7 +9,28 @@ import os
 import shutil
 import uuid
 
+# =========================
+# DATABASE IMPORTS
+# =========================
+from database import engine, Base, SessionLocal
+import models
+
 app = FastAPI()
+
+# =========================
+# CREATE TABLES
+# =========================
+Base.metadata.create_all(bind=engine)
+
+# =========================
+# DB Dependency
+# =========================
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 # =========================
 # CORS
@@ -37,14 +59,42 @@ UPLOAD_FOLDER = "uploads/events"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # =========================
-# Health Check
+# HEALTH CHECK
 # =========================
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
 # =========================
-# Face Matching Logic
+# PHOTOGRAPHER SIGNUP
+# =========================
+@app.post("/signup")
+def signup(name: str, email: str, password: str, db: Session = Depends(get_db)):
+
+    existing_user = db.query(models.Photographer).filter(
+        models.Photographer.email == email
+    ).first()
+
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    new_user = models.Photographer(
+        name=name,
+        email=email,
+        password=password
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return {
+        "success": True,
+        "message": "Photographer account created successfully"
+    }
+
+# =========================
+# FACE MATCHING LOGIC
 # =========================
 def match_faces(selfie_path, event_folder):
 
@@ -76,23 +126,19 @@ def match_faces(selfie_path, event_folder):
 
     return matched
 
-
 # =========================
-# Match API
+# MATCH API
 # =========================
 @app.post("/match/{event_id}")
 async def match(event_id: str, selfie: UploadFile = File(...)):
 
     try:
-        # Unique temp filename
         temp_filename = f"{uuid.uuid4()}_{selfie.filename}"
         temp_path = f"/tmp/{temp_filename}"
 
-        # Save selfie locally
         with open(temp_path, "wb") as buffer:
             shutil.copyfileobj(selfie.file, buffer)
 
-        # Upload selfie to Cloudinary
         upload_result = cloudinary.uploader.upload(
             temp_path,
             folder=f"picaro_selfies/{event_id}"
@@ -100,11 +146,9 @@ async def match(event_id: str, selfie: UploadFile = File(...)):
 
         selfie_url = upload_result["secure_url"]
 
-        # Local folder matching (temporary logic)
         event_folder = os.path.join(UPLOAD_FOLDER, event_id)
         matched = match_faces(temp_path, event_folder)
 
-        # Remove temp file
         if os.path.exists(temp_path):
             os.remove(temp_path)
 
