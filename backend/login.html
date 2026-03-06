@@ -18,19 +18,50 @@
     <p id="error" style="color:red;"></p>
   </div>
 
-  <script>
-    function login() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+<script>
+async function login() {
 
-      if(email === "admin@picaro.com" && password === "1234") {
-        localStorage.setItem("photographer", "loggedIn");
-        window.location.href = "dashboard.html";
-      } else {
-        document.getElementById("error").innerText = "Invalid Credentials!";
-      }
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  try {
+
+    const response = await fetch("/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password
+      })
+    });
+
+    const data = await response.json();
+
+    console.log(data);
+
+    if (data.success === true) {
+
+      localStorage.setItem("photographer_id", data.photographer_id);
+      localStorage.setItem("name", data.name);
+
+      window.location.href = "/dashboard";
+
+    } else {
+
+      document.getElementById("error").innerText = "Invalid Credentials!";
+
     }
-  </script>
+
+  } catch (error) {
+
+    document.getElementById("error").innerText = "Server error!";
+
+  }
+
+}
+</script>
 
 </body>
 </html>
