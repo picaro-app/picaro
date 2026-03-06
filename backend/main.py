@@ -69,10 +69,10 @@ def login(data: LoginData, db: Session = Depends(get_db)):
     ).first()
 
     if not user:
-        raise HTTPException(status_code=400, detail="User not found")
+        return {"success": False}
 
     if user.password != data.password:
-        raise HTTPException(status_code=400, detail="Incorrect password")
+        return {"succes": False}
 
     return {
         "success": True,
