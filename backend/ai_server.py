@@ -9,6 +9,7 @@ import cloudinary.uploader
 import os
 import shutil
 import uuid
+import fastapi import Form
 
 from database import engine, Base, SessionLocal
 import models
@@ -174,7 +175,7 @@ def get_my_events(photographer_id: int, db: Session = Depends(get_db)):
 # =========================
 @app.post("/upload-photos")
 async def upload_photos(
-    event_id: str = Body(...),
+    event_id: str = Form(...),
     photographer_id: int = Body(...),
     photos: list[UploadFile] = File(...)
 ):
