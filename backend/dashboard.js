@@ -119,7 +119,7 @@ function uploadPhotos() {
   const formData = new FormData();
 
   formData.append("event_id", eventId);
-  formData.append("photographer_id", localStorage.getItem("photographerId"));
+  formData.append("photographer_id", localStorage.getItem("photographer_id"));
 
   for (let i = 0; i < files.length; i++) {
 
