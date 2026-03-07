@@ -3,47 +3,57 @@
 // ===============================
 const photographerId = localStorage.getItem("photographer_id");
 
-if (!photographerId) {
-  console.log("NOT logged in")
-}
-
 function logout() {
   localStorage.clear();
   window.location.href = "/";
 }
 
 // ===============================
-// 📦 DRAG & DROP
+// 📦 PAGE LOAD
 // ===============================
-document.addEventListener("DOMContentLoaded", function () {
+window.addEventListener("load", function () {
 
   const dropArea = document.getElementById("dropArea");
   const fileInput = document.getElementById("photos");
 
-  dropArea.addEventListener("click", () => fileInput.click());
+  if (!dropArea || !fileInput) {
+    console.log("Drop area or file input not found");
+    return;
+  }
 
-  dropArea.addEventListener("dragover", (e) => {
+  // Click to select
+  dropArea.addEventListener("click", function () {
+    fileInput.click();
+  });
+
+  // Drag over
+  dropArea.addEventListener("dragover", function (e) {
     e.preventDefault();
     dropArea.classList.add("dragging");
   });
 
-  dropArea.addEventListener("dragleave", () => {
+  // Drag leave
+  dropArea.addEventListener("dragleave", function () {
     dropArea.classList.remove("dragging");
   });
 
-  dropArea.addEventListener("drop", (e) => {
+  // Drop
+  dropArea.addEventListener("drop", function (e) {
     e.preventDefault();
     dropArea.classList.remove("dragging");
     fileInput.files = e.dataTransfer.files;
   });
 
   loadEvents();
+
 });
 
 // ===============================
 // 📦 LOAD EVENTS
 // ===============================
 async function loadEvents() {
+
+  if (!photographerId) return;
 
   try {
 
@@ -53,6 +63,8 @@ async function loadEvents() {
     const container = document.getElementById("eventsContainer");
     const totalEvents = document.getElementById("totalEvents");
 
+    if (!container || !totalEvents) return;
+
     container.innerHTML = "";
 
     if (!data.success || data.events.length === 0) {
@@ -60,6 +72,7 @@ async function loadEvents() {
       totalEvents.innerText = 0;
       container.innerHTML = "<p>No events created yet</p>";
       return;
+
     }
 
     totalEvents.innerText = data.events.length;
@@ -73,7 +86,7 @@ async function loadEvents() {
         <div class="event-info">
           <h3>${event.event_id}</h3>
           <p>${event.created_at}</p>
-          <button class="manage-btn" onclick="manageEvent('${event.event_id}')">Manage</button>
+          <button onclick="manageEvent('${event.event_id}')">Manage</button>
         </div>
       `;
 
@@ -153,6 +166,7 @@ function uploadPhotos() {
     if (xhr.status === 200) {
 
       status.innerText = "Upload Successful 📸";
+
       document.getElementById("eventId").value = "";
       document.getElementById("photos").value = "";
 
