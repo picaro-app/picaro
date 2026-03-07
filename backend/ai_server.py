@@ -10,9 +10,6 @@ import os
 import shutil
 import uuid
 
-# =========================
-# DATABASE IMPORTS
-# =========================
 from database import engine, Base, SessionLocal
 import models
 
@@ -54,7 +51,7 @@ cloudinary.config(
 )
 
 # =========================
-# Upload Folder
+# UPLOAD FOLDER
 # =========================
 UPLOAD_FOLDER = "uploads/events"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -89,10 +86,7 @@ def signup(name: str, email: str, password: str, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
-    return {
-        "success": True,
-        "message": "Photographer account created successfully"
-    }
+    return {"success": True}
 
 # =========================
 # LOGIN
@@ -112,13 +106,12 @@ def login(email: str = Body(...), password: str = Body(...), db: Session = Depen
 
     return {
         "success": True,
-        "message": "Login successful",
         "photographer_id": user.id,
         "name": user.name
     }
 
 # =========================
-# CREATE EVENT (Manual event_id)
+# CREATE EVENT
 # =========================
 class EventCreate(BaseModel):
     event_id: str
@@ -146,18 +139,16 @@ def create_event(data: EventCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_event)
 
-    # Auto create folder for event
     event_path = os.path.join(UPLOAD_FOLDER, data.event_id)
     os.makedirs(event_path, exist_ok=True)
 
     return {
         "success": True,
-        "event_id": new_event.event_id,
-        "event_name": new_event.event_name
+        "event_id": new_event.event_id
     }
 
 # =========================
-# GET MY EVENTS
+# GET EVENTS
 # =========================
 @app.get("/my-events/{photographer_id}")
 def get_my_events(photographer_id: int, db: Session = Depends(get_db)):
@@ -179,23 +170,62 @@ def get_my_events(photographer_id: int, db: Session = Depends(get_db)):
     }
 
 # =========================
-# FACE MATCHING LOGIC
+# UPLOAD PHOTOS
+# =========================
+@app.post("/upload-photos")
+async def upload_photos(
+    event_id: str = Body(...),
+    photographer_id: int = Body(...),
+    photos: list[UploadFile] = File(...)
+):
+
+    try:
+
+        event_folder = os.path.join(UPLOAD_FOLDER, event_id)
+        os.makedirs(event_folder, exist_ok=True)
+
+        uploaded = []
+
+        for photo in photos:
+
+            filename = f"{uuid.uuid4()}_{photo.filename}"
+            file_path = os.path.join(event_folder, filename)
+
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(photo.file, buffer)
+
+            result = cloudinary.uploader.upload(
+                file_path,
+                folder=f"picaro_events/{event_id}"
+            )
+
+            uploaded.append(result["secure_url"])
+
+        return {
+            "success": True,
+            "uploaded": uploaded
+        }
+
+    except Exception as e:
+
+        print("UPLOAD ERROR:", e)
+
+        return {"success": False}
+
+# =========================
+# FACE MATCH
 # =========================
 def match_faces(selfie_path, event_folder):
-
-    if not os.path.exists(event_folder):
-        return []
 
     files = os.listdir(event_folder)
     matched = []
 
     for file in files:
+
         file_path = os.path.join(event_folder, file)
 
-        if os.path.isdir(file_path):
-            continue
-
         try:
+
             result = DeepFace.verify(
                 img1_path=selfie_path,
                 img2_path=file_path,
@@ -207,9 +237,11 @@ def match_faces(selfie_path, event_folder):
                 matched.append(file)
 
         except Exception as e:
+
             print("Error verifying:", e)
 
     return matched
+
 
 # =========================
 # MATCH API
@@ -218,8 +250,8 @@ def match_faces(selfie_path, event_folder):
 async def match(event_id: str, selfie: UploadFile = File(...)):
 
     try:
-        temp_filename = f"{uuid.uuid4()}_{selfie.filename}"
-        temp_path = f"/tmp/{temp_filename}"
+
+        temp_path = f"/tmp/{uuid.uuid4()}_{selfie.filename}"
 
         with open(temp_path, "wb") as buffer:
             shutil.copyfileobj(selfie.file, buffer)
@@ -232,10 +264,10 @@ async def match(event_id: str, selfie: UploadFile = File(...)):
         selfie_url = upload_result["secure_url"]
 
         event_folder = os.path.join(UPLOAD_FOLDER, event_id)
+
         matched = match_faces(temp_path, event_folder)
 
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        os.remove(temp_path)
 
         return {
             "success": True,
@@ -244,10 +276,11 @@ async def match(event_id: str, selfie: UploadFile = File(...)):
         }
 
     except Exception as e:
+
         print("MATCH ERROR:", e)
+
         return {
-            "success": False,
-            "error": "AI Server Error"
+            "success": False
         }
 
 # =========================
