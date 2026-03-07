@@ -9,7 +9,7 @@
 <div class="topbar">
   <h2>📸 PICARO</h2>
   <div class="profile">
-    <span>Photographer</span>
+    <span id="photographerName">Photographer</span>
     <button onclick="logout()">Logout</button>
   </div>
 </div>
@@ -64,6 +64,27 @@
 
 </div>
 
+<script>
+
+const photographerId = localStorage.getItem("photographer_id");
+const name = localStorage.getItem("name");
+
+if (!photographerId) {
+  window.location.href = "/";
+}
+
+if (name) {
+  document.getElementById("photographerName").innerText = name;
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = "/";
+}
+
+</script>
+
 <script src="dashboard.js"></script>
+
 </body>
 </html>
