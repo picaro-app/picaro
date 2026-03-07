@@ -4,7 +4,7 @@
 const photographerId = localStorage.getItem("photographer_id");
 
 if (!photographerId) {
-  window.location.href = "/";
+  console.log("NOT logged in")
 }
 
 function logout() {
