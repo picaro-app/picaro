@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from database import engine, Base, SessionLocal
 from pydantic import BaseModel
 import models
+import os
 
 app = FastAPI()
 
@@ -32,7 +33,8 @@ def home():
 # =========================
 @app.get("/dashboard")
 def dashboard():
-    return FileResponse("dashboard.html")
+    file_path = os.path.join(os.getcwd(), "dashboard.html")
+    return FileResponse(file_path)
 
 # =========================
 # SIGNUP
