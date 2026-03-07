@@ -33,7 +33,8 @@ def home():
 # =========================
 @app.get("/dashboard")
 def dashboard():
-    file_path = os.path.join(os.getcwd(), "dashboard.html")
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(BASE_DIR, "dashboard.html")
     return FileResponse(file_path)
 
 # =========================
