@@ -32,10 +32,9 @@ def home():
 # DASHBOARD PAGE
 # =========================
 @app.get("/dashboard")
-def dashboard():
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(BASE_DIR, "dashboard.html")
-    return FileResponse(file_path)
+def dashboard_page():
+    return FileResponse("dashboard.html")
+    
 
 # =========================
 # SIGNUP
