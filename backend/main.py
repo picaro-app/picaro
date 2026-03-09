@@ -6,7 +6,7 @@ from pydantic import BaseModel
 import models
 import os
 from datetime import datetime
-from typing import List
+from typing import Annotated
 
 app = FastAPI()
 
@@ -121,20 +121,21 @@ UPLOAD_FOLDER = "uploads"
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-@app.post("/upload-photos")
+from fastapi import UploadFile, File, Form
+from typing import Annotated
+
+@app.post("/upload-photos", summary="Upload Photos")
 async def upload_photos(
-    event_id: str = Form(...),
-    photographer_id: int = Form(...),
-    photos: list[UploadFile] = File(...),
+    event_id: Annotated[str, Form(...)],
+    photographer_id: Annotated[int, Form(...)],
+    photos: Annotated[list[UploadFile], File(...)],
     db: Session = Depends(get_db)
 ):
-
-    # Check event
+    # Check if event exists
     event = db.query(models.Event).filter(
         models.Event.event_id == event_id
     ).first()
 
-    # Auto create event
     if not event:
         event = models.Event(
             event_id=event_id,
@@ -145,16 +146,13 @@ async def upload_photos(
         db.add(event)
         db.commit()
 
-    # Create folder
     event_folder = os.path.join("uploads", event_id)
     os.makedirs(event_folder, exist_ok=True)
 
-    # Save files
     for photo in photos:
-        file_location = os.path.join(event_folder, photo.filename)
-
-        with open(file_location, "wb") as buffer:
-            buffer.write(await photo.read())
+        file_path = os.path.join(event_folder, photo.filename)
+        with open(file_path, "wb") as f:
+            f.write(await photo.read())
 
     return {
         "success": True,
