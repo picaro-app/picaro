@@ -123,7 +123,7 @@ if not os.path.exists(UPLOAD_FOLDER):
 @app.post("/upload-photos")
 async def upload_photos(
     event_id: str = Form(...),
-    photographer_id: int = Form(...),
+    photographer_id: int = Form(1),
     photos: list[UploadFile] = File(...),
     db: Session = Depends(get_db)
 ):
