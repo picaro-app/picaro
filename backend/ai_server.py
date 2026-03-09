@@ -287,4 +287,4 @@ async def match(event_id: str, selfie: UploadFile = File(...)):
 # =========================
 # STATIC FILES
 # =========================
-app.mount("/", StaticFiles(directory=".", html=True), name="static")
+app.mount("/static", StaticFiles(directory=".", html=True), name="static")
