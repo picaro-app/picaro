@@ -106,9 +106,7 @@ async function loadEvents() {
 // 🎯 GO TO MANAGE PAGE
 // ===============================
 function manageEvent(eventId) {
-
   window.location.href = `manage.html?event=${eventId}`;
-
 }
 
 // ===============================
@@ -123,10 +121,8 @@ function uploadPhotos() {
   const uploadBtn = document.getElementById("uploadBtn");
 
   if (!eventId || files.length === 0) {
-
     status.innerText = "Create Event ID & select photos";
     return;
-
   }
 
   const formData = new FormData();
@@ -135,9 +131,7 @@ function uploadPhotos() {
   formData.append("photographer_id", photographerId);
 
   for (let i = 0; i < files.length; i++) {
-
     formData.append("photos", files[i]);
-
   }
 
   const xhr = new XMLHttpRequest();
@@ -150,10 +144,8 @@ function uploadPhotos() {
   xhr.upload.onprogress = function (e) {
 
     if (e.lengthComputable) {
-
       const percent = (e.loaded / e.total) * 100;
       progressBar.style.width = percent + "%";
-
     }
 
   };
@@ -183,3 +175,8 @@ function uploadPhotos() {
   xhr.send(formData);
 
 }
+
+// 🔥 IMPORTANT (GLOBAL FUNCTIONS)
+window.uploadPhotos = uploadPhotos;
+window.manageEvent = manageEvent;
+window.logout = logout;
