@@ -6,6 +6,7 @@ from pydantic import BaseModel
 import models
 import os
 from datetime import datetime
+from typing import List
 
 app = FastAPI()
 
@@ -124,7 +125,7 @@ if not os.path.exists(UPLOAD_FOLDER):
 async def upload_photos(
     event_id: str = Form(...),
     photographer_id: int = Form(1),
-    photos: list[UploadFile] = File(...),
+    photos: List[UploadFile] = File(...),
     db: Session = Depends(get_db)
 ):
 
