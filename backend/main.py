@@ -174,7 +174,7 @@ def home():
 # =========================
 # DASHBOARD PAGE
 # =========================
-@app.get("/dashboard")
+@app.get("/dashboard.html")
 def dashboard():
     return FileResponse("dashboard.html")
 
