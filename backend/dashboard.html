@@ -16,53 +16,56 @@
 
 <div class="container">
 
-  <h1>Dashboard</h1>
+<h1>Dashboard</h1>
 
-  <!-- Stats Section -->
-  <div class="stats">
-    <div class="card">
-      <h3 id="totalEvents">0</h3>
-      <p>Total Events</p>
-    </div>
-    <div class="card">
-      <h3 id="totalPhotos">0</h3>
-      <p>Total Photos</p>
-    </div>
-    <div class="card">
-      <h3>0</h3>
-      <p>Total Views</p>
-    </div>
+<div class="stats">
+  <div class="card">
+    <h3 id="totalEvents">0</h3>
+    <p>Total Events</p>
   </div>
 
-  <!-- Upload Section -->
-  <div class="upload-section">
-    <h2>Create / Upload Event</h2>
-
-    <input type="text" id="eventId" placeholder="Create Event ID">
-
-    <!-- Drag & Drop -->
-    <div id="dropArea" class="drop-area">
-      <p>Drag & Drop Photos Here or Click to Select</p>
-      <input type="file" id="photos" multiple hidden>
-    </div>
-
-    <button id="uploadBtn" onclick="uploadPhotos()">Upload Photos</button>
-
-    <!-- Progress Bar -->
-    <div class="progress-container">
-      <div id="progressBar" class="progress-bar"></div>
-    </div>
-
-    <p id="status"></p>
+  <div class="card">
+    <h3 id="totalPhotos">0</h3>
+    <p>Total Photos</p>
   </div>
 
-  <!-- Events List -->
-  <div class="events-section">
-    <h2>Your Events</h2>
-    <div id="eventsContainer" class="events-grid"></div>
+  <div class="card">
+    <h3>0</h3>
+    <p>Total Views</p>
   </div>
+</div>
+
+
+<div class="upload-section">
+
+<h2>Create / Upload Event</h2>
+
+<input type="text" id="eventId" placeholder="Create Event ID">
+
+<div id="dropArea" class="drop-area">
+<p>Drag & Drop Photos Here or Click to Select</p>
+<input type="file" id="photos" multiple hidden>
+</div>
+
+<button id="uploadBtn" onclick="uploadPhotos()">Upload Photos</button>
+
+<div class="progress-container">
+<div id="progressBar" class="progress-bar"></div>
+</div>
+
+<p id="status"></p>
 
 </div>
+
+
+<div class="events-section">
+<h2>Your Events</h2>
+<div id="eventsContainer" class="events-grid"></div>
+</div>
+
+</div>
+
+
 
 <script>
 
@@ -82,10 +85,165 @@ function logout() {
   window.location.href = "/";
 }
 
+
+// =======================
+// DRAG & DROP
+// =======================
+
+const dropArea = document.getElementById("dropArea");
+const fileInput = document.getElementById("photos");
+
+dropArea.addEventListener("click", () => {
+  fileInput.click();
+});
+
+dropArea.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  dropArea.classList.add("dragging");
+});
+
+dropArea.addEventListener("dragleave", () => {
+  dropArea.classList.remove("dragging");
+});
+
+dropArea.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dropArea.classList.remove("dragging");
+  fileInput.files = e.dataTransfer.files;
+});
+
+
+
+// =======================
+// LOAD EVENTS
+// =======================
+
+async function loadEvents() {
+
+try {
+
+const res = await fetch(`/my-events/${photographerId}`);
+const data = await res.json();
+
+const container = document.getElementById("eventsContainer");
+const totalEvents = document.getElementById("totalEvents");
+
+container.innerHTML = "";
+
+if (!data.success || data.events.length === 0) {
+
+totalEvents.innerText = 0;
+container.innerHTML = "<p>No events yet</p>";
+
+return;
+
+}
+
+totalEvents.innerText = data.events.length;
+
+data.events.forEach(event => {
+
+const card = document.createElement("div");
+
+card.className = "event-card";
+
+card.innerHTML = `
+<h3>${event.event_id}</h3>
+<p>${event.created_at}</p>
+`;
+
+container.appendChild(card);
+
+});
+
+} catch (err) {
+
+console.log(err);
+
+}
+
+}
+
+loadEvents();
+
+
+
+// =======================
+// UPLOAD PHOTOS
+// =======================
+
+function uploadPhotos() {
+
+const eventId = document.getElementById("eventId").value.trim();
+const files = document.getElementById("photos").files;
+const status = document.getElementById("status");
+const progressBar = document.getElementById("progressBar");
+const uploadBtn = document.getElementById("uploadBtn");
+
+if (!eventId || files.length === 0) {
+
+status.innerText = "Create Event ID & select photos";
+return;
+
+}
+
+const formData = new FormData();
+
+formData.append("event_id", eventId);
+formData.append("photographer_id", photographerId);
+
+for (let i = 0; i < files.length; i++) {
+
+formData.append("photos", files[i]);
+
+}
+
+const xhr = new XMLHttpRequest();
+
+xhr.open("POST", "/upload-photos", true);
+
+uploadBtn.disabled = true;
+status.innerText = "Uploading...";
+
+xhr.upload.onprogress = function (e) {
+
+if (e.lengthComputable) {
+
+const percent = (e.loaded / e.total) * 100;
+progressBar.style.width = percent + "%";
+
+}
+
+};
+
+xhr.onload = function () {
+
+uploadBtn.disabled = false;
+progressBar.style.width = "0%";
+
+if (xhr.status === 200) {
+
+status.innerText = "Upload Successful 📸";
+
+document.getElementById("eventId").value = "";
+document.getElementById("photos").value = "";
+
+loadEvents();
+
+} else {
+
+status.innerText = "Upload Failed";
+
+}
+
+};
+
+xhr.send(formData);
+
+}
+
 </script>
 
-<!-- IMPORTANT: dashboard.js connect -->
-<script src="/dashboard.js"></script>
 
 </body>
 </html>
