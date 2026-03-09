@@ -124,42 +124,40 @@ if not os.path.exists(UPLOAD_FOLDER):
 @app.post("/upload-photos")
 async def upload_photos(
     event_id: str = Form(...),
-    photographer_id: int = Form(1),
-    photos: List[UploadFile] = File(...),
+    photographer_id: int = Form(...),
+    photos: list[UploadFile] = File(...),
     db: Session = Depends(get_db)
 ):
 
-    # Check if event exists
-    existing_event = db.query(models.Event).filter(
+    # Check event
+    event = db.query(models.Event).filter(
         models.Event.event_id == event_id
     ).first()
 
-    # If not → create event automatically
-    if not existing_event:
-        new_event = models.Event(
+    # Auto create event
+    if not event:
+        event = models.Event(
             event_id=event_id,
             event_name=event_id,
             photographer_id=photographer_id,
             created_at=datetime.utcnow()
         )
-        db.add(new_event)
+        db.add(event)
         db.commit()
-        db.refresh(new_event)
 
-    # Save photos
-    event_folder = os.path.join(UPLOAD_FOLDER, event_id)
+    # Create folder
+    event_folder = os.path.join("uploads", event_id)
+    os.makedirs(event_folder, exist_ok=True)
 
-    if not os.path.exists(event_folder):
-        os.makedirs(event_folder)
-
+    # Save files
     for photo in photos:
-        file_path = os.path.join(event_folder, photo.filename)
+        file_location = os.path.join(event_folder, photo.filename)
 
-        with open(file_path, "wb") as f:
-            content = await photo.read()
-            f.write(content)
+        with open(file_location, "wb") as buffer:
+            buffer.write(await photo.read())
 
     return {
         "success": True,
-        "message": "Photos uploaded successfully"
+        "event_id": event_id,
+        "uploaded": len(photos)
     }
