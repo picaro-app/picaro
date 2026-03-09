@@ -143,6 +143,7 @@ async def upload_photos(
         )
         db.add(new_event)
         db.commit()
+        db.refresh(new_event)
 
     # Save photos
     event_folder = os.path.join(UPLOAD_FOLDER, event_id)
