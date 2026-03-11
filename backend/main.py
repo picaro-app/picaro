@@ -6,11 +6,13 @@ from pydantic import BaseModel
 import models
 import os
 from datetime import datetime
-from typing import Lists
+from typing import List
 
 app = FastAPI()
 
-# Create tables
+# =========================
+# CREATE TABLES
+# =========================
 Base.metadata.create_all(bind=engine)
 
 # =========================
@@ -116,26 +118,26 @@ def get_events(photographer_id: int, db: Session = Depends(get_db)):
 # =========================
 # UPLOAD PHOTOS + AUTO CREATE EVENT
 # =========================
+
 UPLOAD_FOLDER = "uploads"
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-from fastapi import UploadFile, File, Form
-from typing import List
-
-@app.post("/upload-photos", summary="Upload Photos")
+@app.post("/upload-photos")
 async def upload_photos(
     event_id: str = Form(...),
-    photographer_id: int= Form(...),
-    photos:List[UploadFile] = File(...),
+    photographer_id: int = Form(...),
+    photos: List[UploadFile] = File(...),
     db: Session = Depends(get_db)
 ):
-    # Check if event exists
+
+    # check event
     event = db.query(models.Event).filter(
         models.Event.event_id == event_id
     ).first()
 
+    # create event if not exists
     if not event:
         event = models.Event(
             event_id=event_id,
@@ -146,16 +148,25 @@ async def upload_photos(
         db.add(event)
         db.commit()
 
-    event_folder = os.path.join("uploads", event_id)
+    # create folder
+    event_folder = os.path.join(UPLOAD_FOLDER, event_id)
     os.makedirs(event_folder, exist_ok=True)
 
+    uploaded_files = 0
+
+    # save photos
     for photo in photos:
+
         file_path = os.path.join(event_folder, photo.filename)
+
         with open(file_path, "wb") as f:
-            f.write(await photo.read())
+            content = await photo.read()
+            f.write(content)
+
+        uploaded_files += 1
 
     return {
         "success": True,
         "event_id": event_id,
-        "uploaded": len(photos)
+        "uploaded": uploaded_files
     }
