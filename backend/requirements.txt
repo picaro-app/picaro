@@ -10,3 +10,4 @@ keras==2.12.0
 cloudinary
 sqlalchemy
 psycopg2-binary
+python-multipart
