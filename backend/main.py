@@ -6,7 +6,7 @@ from pydantic import BaseModel
 import models
 import os
 from datetime import datetime
-from typing import Annotated
+from typing import Lists
 
 app = FastAPI()
 
@@ -122,13 +122,13 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 from fastapi import UploadFile, File, Form
-from typing import Annotated
+from typing import List
 
 @app.post("/upload-photos", summary="Upload Photos")
 async def upload_photos(
-    event_id: Annotated[str, Form(...)],
-    photographer_id: Annotated[int, Form(...)],
-    photos: Annotated[list[UploadFile], File(...)],
+    event_id: str = Form(...),
+    photographer_id: int= Form(...),
+    photos:List[UploadFile] = File(...),
     db: Session = Depends(get_db)
 ):
     # Check if event exists
